@@ -1,13 +1,15 @@
 const express = require('express')
-const passport = require('passport')
 const session = require('express-session')
+
 const FileStore = require('session-file-store')(session)
-const {urlencoded} = require("express");
+const passport = require('passport')
+
 const app = express()
 const port = 3000
 
-app.use(express.json())
+app.use(express.json()) //парсинг
 app.use(express.urlencoded({extended: false}))
+
 app.use(
     session({
         secret: '12345',
@@ -22,13 +24,21 @@ app.use(
     })
 )
 
-require('./passportConfig.js')
+require('./passportConfig.js') //подключение конфига
+
+app.use(passport.initialize()) // подключаемся к сессии
+app.use(passport.session()) // сохраняем пользователя
+
+const {urlencoded} = require("express");
+
+
 
 app.get('/', (req, res) => {
     res.send('Hello World!!!')
 })
 
-app.get('/login', (req, res) => {
+//сюда отправляем email & password для аутентификации
+app.post('/login', (req, res, next) => {
     passport.authenticate('local', function (err, user) {
         if (err) {
             return next(err)
@@ -42,12 +52,16 @@ app.get('/login', (req, res) => {
             }
             return res.redirect('/admin');
         })
-    })
-    (req, res, next);
+    }) (req, res, next);
 })
 
-app.get('/admin', (req, res) => {
-    res.send('This is a admin page')
+//authentication
+const auth = (req, res, next) => {
+    return res.redirect('/');
+}
+
+app.get('/admin', auth, (req, res) => {
+    res.send('This is an admin page')
 })
 
 app.listen(port, () => {

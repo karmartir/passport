@@ -7,19 +7,20 @@ const user = {
     password: '1234'
 }
 
-passport.serializeUser(function (user, done) {
+passport.serializeUser(function (user, done) { //сохраняет юзера
         console.log('Serialization', user)
         done(null, user.id);
     }
 );
 
 
-passport.deserializeUser(function (id, done) {
+passport.deserializeUser(function (id, done) { //проверяет id
         console.log('deserializeUser', id)
-        const user = (user.id === id) ? user : false
-        done(null, user);
+        const userOne = (user.id === id) ? user : false //сравниваем id из базы данных на строке 4 с id который вернул сериализатор
+        done(null, userOne);
     }
 );
+
 passport.use(
     new LocalStrategy({usernameField: 'email'},
         function verify(email, password, done) {
@@ -28,6 +29,5 @@ passport.use(
             } else {
                 return done(null, false)
             }
-
         })
-)
+);
